@@ -1,0 +1,89 @@
+inline std::unique_ptr<AbstractFactory::HotDrink>make_drink(const std::string &name);
+是一个函数声明，它描述了一个名为 make_drink 的函数，该函数具有以下特点：
+返回类型：std::unique_ptr<AbstractFactory::HotDrink>。这意味着函数返回一个指向 AbstractFactory::HotDrink 类型对象（或其派生类对象）的智能指针 std::unique_ptr。std::unique_ptr 是一个拥有其所指向对象的智能指针，当 unique_ptr 被销毁时，它所指向的对象也会被自动删除。
+函数名：make_drink。
+参数：函数接受一个名为 name 的参数，类型为 const std::string &（对 std::string 类型的常量引用）。这意味着你可以传递一个字符串给这个函数，而函数内部不会修改这个字符串。
+inline 关键字：函数声明前使用了 inline 关键字。这通常是对编译器的建议，表示该函数可能会在多个地方被调用，并且编译器应该尝试在每个调用点内联该函数（即将函数体直接插入到调用点处，而不是进行常规的函数调用和返回）。内联可以减少函数调用的开销，但可能会增加程序的总体大小。然而，inline 只是一个建议，编译器可以选择忽略它。
+函数体缺失：这个声明没有包含函数体，所以它是一个前向声明或原型声明。这意味着在代码的其他部分（可能是同一个文件或另一个文件中）应该有这个函数的定义（即包含函数体的部分）。
+可能的用途：基于函数名和参数，这个函数可能是一个工厂函数，用于根据提供的 name 字符串创建并返回一个特定类型的热饮对象（作为 AbstractFactory::HotDrink 的派生类）。这样的设计允许在不修改 make_drink 函数的情况下轻松添加新的热饮类型。
+总结来说，make_drink 函数是一个可能用于创建热饮对象的工厂函数，它接受一个字符串参数来指定要创建的热饮类型，并返回一个指向该热饮对象的智能指针。inline 关键字建议编译器尝试内联该函数以优化性能。
+
+
+
+factories["tea"] = [] {
+                auto tea = std::make_unique<AbstractFactory::Tea>();
+                tea->prepare(200);
+                return tea;
+            };
+factories["tea"] 被赋予了一个 lambda 表达式，这个表达式负责创建并配置一个 AbstractFactory::Tea 对象，然后将其作为一个 std::unique_ptr<AbstractFactory::HotDrink> 返回。下面是对这个 lambda 表达式的详细分析：
+Lambda 表达式的定义：
+[] { ... } 是一个没有捕获任何外部变量的 lambda 表达式。捕获列表为空，意味着这个 lambda 表达式不依赖于其外部作用域中的任何变量（除了全局变量或静态变量，但在这个上下文中并未使用）。
+对象的创建：
+auto tea = std::make_unique<AbstractFactory::Tea>(); 这行代码使用 std::make_unique 来创建一个 AbstractFactory::Tea 类型的对象，并将其包装在一个 std::unique_ptr<AbstractFactory::Tea> 中。由于 AbstractFactory::Tea 继承自 AbstractFactory::HotDrink，这个 unique_ptr 可以隐式转换为 std::unique_ptr<AbstractFactory::HotDrink>。
+对象的配置：
+tea->prepare(200); 这行代码调用了 tea 对象（即 AbstractFactory::Tea 实例）的 prepare 方法，并传递了一个参数 200。这个 prepare 方法可能用于设置饮品的某种属性，比如体积或准备状态，具体取决于其实现。
+返回对象：
+return tea; 最后，lambda 表达式返回了 tea 对象，它是一个 std::unique_ptr<AbstractFactory::Tea>。由于返回类型被推导为 std::function<std::unique_ptr<AbstractFactory::HotDrink>()>，这里发生了隐式类型转换，tea 被安全地转换为 std::unique_ptr<AbstractFactory::HotDrink> 并返回。
+在 factories 中的存储：
+整个 lambda 表达式被存储在 factories 映射的 "tea" 键对应的值中。factories 是一个 std::map，其键是 std::string 类型，值是 std::function<std::unique_ptr<AbstractFactory::HotDrink>()> 类型。这意味着 factories["tea"] 现在持有一个可以创建并配置 AbstractFactory::Tea 对象的函数对象。
+使用 factories["tea"]：
+当需要创建一个 Tea 对象时，可以通过调用 factories["tea"]() 来实现。这将执行上述 lambda 表达式，返回一个新的 std::unique_ptr<AbstractFactory::HotDrink>，指向一个已经准备好（通过 prepare 方法）的 Tea 对象。
+
+
+#include <iostream>  
+#include <stdexcept> // 包含std::invalid_argument和std::exception  
+
+void checkValue(int value, const std::string& name) {
+	if (value < 0) {
+		throw std::invalid_argument(name + " cannot be negative");
+	}
+}
+
+int main() {
+	try {
+		checkValue(-1, "age");
+	}
+	catch (const std::invalid_argument& e) {
+		std::cerr << "Caught an exception: " << e.what() << std::endl;
+	}
+	return 0;
+}
+在这个例子中，checkValue函数检查一个整数值是否为负。如果是，它抛出一个std::invalid_argument异常，并附带一个描述性消息。在main函数中，我们尝试调用checkValue，并使用try块来捕获可能抛出的异常。如果捕获到std::invalid_argument异常，我们就打印出异常的消息。
+throw是异常处理机制中的关键部分，它允许程序在遇到错误时优雅地处理这些情况，而不是简单地崩溃或返回错误码，这通常更难以调试和维护*/
+
+
+SolidWall(Point2D strat, Point2D end, int elevation, int height, int width, Material material) :
+	Wall{ strat, end, elevation, height }, width{ width }, material{ material }
+{
+	if (elevation < 0 && material == Material::aerated_concrete)
+		throw invalid_argument("elevation");
+	if (width < 120 && material == Material::brick)
+		throw invalid_argument("width");
+	在C++编程语言中，throw是一个关键字，它用于触发一个异常。异常处理是编程中的一种机制，用于处理在程序运行时可能发生的错误情况。通过throw关键字，程序可以抛出一个异常对象，这个对象通常是一个派生自std::exception的类的实例，但也可以是任何类型的对象。
+	当throw被执行时，它会立即中断当前函数的执行，并将控制权转移到最近的与异常类型相匹配的catch代码块。如果没有找到匹配的catch块，异常会继续向上层调用者传播，直到找到匹配项，或者程序因为未处理的异常而终止。
+}
+
+
+在C++中，#if 0是一个预处理指令，用于在编译之前条件性地包含或排除代码段。这个指令的工作原理与#if指令类似，但是#if 0的条件永远为假（因为0在C++预处理器的条件判断中被视为假），这意味着紧跟在这个指令后面的代码直到遇到#endif指令之前的代码都会被编译器忽略，就像这些代码从未存在过一样。
+
+这种做法常用于临时禁用代码段，以便在调试或测试过程中排除某些代码的影响，而不必实际删除这些代码。这样做的好处是，当你需要再次启用这些代码时，只需将#if 0改为#if 1（或者简单地移除#if 0和对应的#endif），而不需要从文件中找回或重新编写被禁用的代码。
+
+示例：
+
+cpp
+#include <iostream>  
+
+int main() {
+#if 0  
+	std::cout << "这段代码不会被编译或执行。" << std::endl;
+#endif  
+
+	std::cout << "这段代码会被编译和执行。" << std::endl;
+
+	return 0;
+}
+在这个例子中，由于#if 0的条件为假，所以std::cout << "这段代码不会被编译或执行。" << std::endl; 这行代码会被编译器忽略。
+
+使用#if 0时需要注意，虽然它提供了一种方便的方法来临时禁用代码，但过度使用或长期保留被禁用的代码可能会使代码库变得难以维护和理解。因此，建议在确定不再需要某段代码时，将其彻底删除或适当注释，以保持代码的清晰和整洁*/
+
+此外，您还展示了两个静态成员函数 create_main 和 create_partition，它们通过工厂模式来创建 SolidWall 对象。这些函数内部使用了构造函数的委托构造（也称为列表初始化）来创建 SolidWall 的实例。注意，create_main 返回的是 std::shared_ptr<SolidWall>，而 create_partition 返回的是 std::unique_ptr<SolidWall>。这是两种不同的智能指针，用于管理对象的生命周期

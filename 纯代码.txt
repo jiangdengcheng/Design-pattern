@@ -1,0 +1,210 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct HtmlElement
+{
+    string Name, Text;
+    vector<HtmlElement> elements;
+
+    HtmlElement() {}//定义
+    HtmlElement(const string& name, const string& text) : Name{ name }, Text{ text } {}
+
+    string str(int depend = 0)const//防止成员函数被调用函数更改
+    {
+        string res;
+        string head = Name + " " + Text + "\n";
+        res += head;
+        for (auto item : elements)//与原数据进行同步修改
+        {
+            string temp = item.Name + " " + item.Text + "\n";
+            res += temp;
+        }
+        return res;
+    }//把elements元素拼接为字符串
+};
+
+struct HtmlBuilder
+{
+    HtmlElement root;
+
+    HtmlBuilder(string root_name) { root.Name = root_name; }//定义
+
+//    void add_child(string child_name, string child_text)
+//    {
+//        root.elements.emplace_back(child_name, child_text); //emplace = push,vector倒放
+//    }//添加其他子元素，名字-文本
+
+    HtmlBuilder* add_child(string child_name, string child_text)
+    {
+        root.elements.emplace_back(child_name, child_text);
+        return this;
+    }
+
+    string str() 
+    {
+        return root.str();
+    }    
+};
+
+int main()
+{
+   HtmlBuilder builder{"ul"};
+   builder.add_child("li", "hello");
+   builder.add_child("li", "world");
+   cout << builder.str() << endl;
+
+	system("pause");
+	return 0;
+}
+
+
+if (dynamic_cast<const SolidWall*>(wall.get()) && dynamic_cast<const SolidWall*>(wall.get())->intersects(*this_wall)) {
+    return nullptr; // 或者抛出异常  
+}
+
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person
+{
+	//employment
+	string position;
+	string company_name;
+	int annual_income = 0;
+	//company
+	string address;
+	string city;
+	string post_code;
+
+	Person() {}//私有构造函数，只能通过Bullder创建
+
+	friend class PersonBuilder;
+	friend class PersonAddressBuilder;
+	friend class PersonJobBuilder;
+
+public:
+	static PersonBuilder create();
+
+	void display() const {
+		std::cout << "Position: " << position << "\n";
+		std::cout << "Company: " << company_name << "\n";
+		std::cout << "Annual Income: " << annual_income << "\n";
+		std::cout << "Address: " << address << "\n";
+		std::cout << "City: " << city << "\n";
+		std::cout << "Post Code: " << post_code << "\n";
+	}
+};
+
+class PersonBuilderBase
+{
+protected:
+	Person& person;
+	explicit PersonBuilderBase(Person& person) : person{ person } {}
+
+public:
+	operator Person()
+	{
+		return move(person);
+	}
+	PersonAddressBuilder lives() const;
+	PersonJobBuilder works() const;
+};
+
+class PersonBuilder : public PersonBuilderBase 
+{
+protected:
+	Person p;
+public:
+	PersonBuilder() : PersonBuilderBase{ p } {}
+};
+
+class PersonAddressBuilder : public PersonBuilderBase
+{
+	typedef PersonAddressBuilder self;
+public:
+	explicit PersonAddressBuilder(Person& person) : PersonBuilderBase{ person } {}
+
+	self& ad(string street_address)
+	{
+		person.address = street_address;
+		return *this;
+	}
+
+	self& po(string code)
+	{
+		person.post_code = code;
+		return *this;
+	}
+
+	self& ci(string live_city)
+	{
+		person.city = live_city;
+		return *this;
+	}
+};
+
+class PersonJobBuilder : public PersonBuilderBase
+{
+	typedef PersonJobBuilder self;
+public:
+	explicit PersonJobBuilder(Person &person): PersonBuilderBase{ person } {}
+
+	self& co(string company)
+	{
+		person.company_name = company;
+		return *this;
+	}
+
+	self& jo(string job)
+	{
+		person.position = job;
+		return *this;
+	}
+
+	self& earn(int earning)
+	{
+		person.annual_income = earning;
+		return *this;
+	}
+};
+
+PersonBuilder Person::create()
+{
+	return PersonBuilder();
+}
+
+PersonAddressBuilder PersonBuilderBase::lives() const
+{
+	return PersonAddressBuilder(person);
+}
+
+PersonJobBuilder PersonBuilderBase::works() const
+{
+	return PersonJobBuilder(person);
+}
+
+int main()
+{
+	Person p = Person::create()
+		.lives().ad("123 road")
+		.po("1GB")
+		.ci("london")
+		.works().co("Pragm")
+		.jo("Consultant")
+		.earn(10);
+	
+	p.display();
+	system("pause");
+	return 0;
+}
+//Person 类：这是一个包含个人就业信息和住址信息的类。它的构造函数是私有的，意味着不能直接实例化这个类的对象。这个类有三个友元类：PersonBullder、PersonAddressBuilder和PersonJobBullder，这些友元类能够访问Person类的私有成员。
+//PersonBullderBase 类：这是一个基础建造者类，提供了一个类型转换操作符，允许将PersonBullderBase对象转换为Person对象。它还提供了lives和works方法，分别用于创建PersonAddressBuilder和PersonJobBullder对象。
+//PersonBullder 类：这是Person类的具体建造者，继承自PersonBullderBase。它提供了一个默认构造函数，用于初始化Person对象。
+//PersonAddressBuilder 类：这个类用于设置Person对象的住址信息。它提供了链式调用的方法（at、with、in），允许逐步设置地址、邮编和城市。
+//PersonJobBullder 类：这个类用于设置Person对象的工作信息。它同样提供了链式调用的方法（at、as、earn），允许逐步设置公司名称、职位和年收入。
+//Person::create 静态方法：这个方法用于创建一个PersonBullder对象，是构建Person对象的起点。
+//Combination 函数：这个函数展示了如何使用建造者模式来创建一个Person对象。通过链式调用，可以逐步设置Person对象的住址和工作信息。
